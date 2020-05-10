@@ -150,7 +150,9 @@ var ConwaysGameOfLife = /*#__PURE__*/function () {
   }, {
     key: "setSpeed",
     value: function setSpeed(speed) {
+      this.pause();
       this.speed = speed * 1000;
+      this["continue"]();
     }
   }, {
     key: "getGen",

@@ -66,9 +66,19 @@
 						<button class="btn btn-primary" id="resetButton">Reset</button>
 					</div>
 					<div class="row">
+						<div class="col-8">
+							<input class="form-control" type="range" min="1" max="1000" value="10" class="slider" id="speedSelect">
+						</div>
+						<div class="col-4">
+							<strong id="speedShow">0.001</strong>
+						</div>
+					</div>
+					<div class="row">
+						Select generation
 						<select class="form-control" name="" id="genSelect">
 							<option value="0">0</option>
 						</select>
+						<small>*It will just display the generation, the resume button will continue from the last gen.</small>
 					</div>
 				</div>
 			</div>
@@ -87,6 +97,8 @@
 		const currentGen = document.getElementById("currentGen");
 		const genSelect = document.getElementById("genSelect");
 		const resetButton = document.getElementById("resetButton");
+		const speedSelect = document.getElementById("speedSelect");
+		const speedShow = document.getElementById("speedShow");
 		let stared = false;
 
 		const GameOfLife = new ConwaysGameOfLife({
@@ -119,6 +131,13 @@
 			stared = false;
 			playButton.innerHTML = "Start";
 		}, true);
+
+		speedSelect.addEventListener("change", () => {
+			const speed = speedSelect.value / 1000;
+			speedShow.innerHTML = speed;
+
+			GameOfLife.setSpeed(speed);
+		});
 
 		GameOfLife.addEvent("onRender", (cg) => {
 			//console.log(currentGen);

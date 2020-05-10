@@ -110,7 +110,9 @@ class ConwaysGameOfLife {
     }
 
     setSpeed(speed){
+        this.pause();
         this.speed = speed * 1000;
+        this.continue();
     }
 
     getGen(){
