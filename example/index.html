@@ -98,6 +98,7 @@
 		});
 		
 		playButton.addEventListener("click", () => {
+			genSelect.disabled = true;
 			if( stared ){
 				GameOfLife.continue();
 			}else{
@@ -109,6 +110,7 @@
 
 		pauseButton.addEventListener("click", () => {
 			GameOfLife.pause();
+			genSelect.disabled = false;
 		}, true);
 
 		resetButton.addEventListener("click", () => {
