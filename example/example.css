@@ -1,0 +1,28 @@
+body{
+    margin: 0;
+}
+
+*{
+    box-sizing: border-box;
+}
+
+#content{
+    width: 100%;
+    padding-left: 15px;
+    padding-right: 15px;
+    overflow: hidden;
+}
+
+#game{
+    float: left;
+}
+
+#controlers{
+    width: 150px;
+    float: right;
+}
+
+.btn{
+    width: 100%;
+    margin-bottom: 10px;
+}

@@ -17,5 +17,5 @@ function build(cb){
 
 exports.build = build
 exports.watch = function(){
-    watch("src/index.js", build);
+    watch("src/gameoflife.js", build);
 }

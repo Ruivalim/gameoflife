@@ -1,19 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Game Of Life</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Game Of Life</title>
+	<link rel="stylesheet" href="example.css" />
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous" />
 </head>
 <body>
-    <canvas></canvas>
-    
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-10">
+				<div id="game">
+					<canvas></canvas>
+				</div>
+			</div>
+			<div class="col-sm-2">
+				<div id="controlers">
+					<div class="row">
+						<strong>Current Gen: <span id="currentGen">0</span></strong>
+					</div>
+					<div class="row">
+						<button class="btn btn-primary" id="playButton">Play</button>
+					</div>
+					<div class="row">
+						<button class="btn btn-primary" id="pauseButton">Pause</button>
+					</div>
+					<div class="row">
+						<button class="btn btn-primary" id="resetButton">Reset</button>
+					</div>
+					<div class="row">
+						<select class="form-control" name="" id="genSelect">
+							<option value="0">0</option>
+						</select>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 
-    <script src="gameoflife.min.js"></script>
-    <script>
-        const canvas = document.querySelector('canvas');
-        const GameOfLife = new ConwaysGameOfLife(canvas, 2)
-    </script>
+	<script src="gameoflife.min.js"></script>
+	<script>
+		const canvas = document.querySelector('canvas');
+		const playButton = document.getElementById("playButton");
+		const pauseButton = document.getElementById("pauseButton");
+		const currentGen = document.getElementById("currentGen");
+		const genSelect = document.getElementById("genSelect");
+		const resetButton = document.getElementById("resetButton");
+		let stared = false;
+
+		const GameOfLife = new ConwaysGameOfLife({
+			canvas: canvas,
+			speed: .001,
+			width: 800,
+			height: 600,
+			saveHistory: true
+		});
+		
+		playButton.addEventListener("click", () => {
+			if( stared ){
+				GameOfLife.continue();
+			}else{
+				GameOfLife.start();
+				stared = true;
+				playButton.innerHTML = "Resume";
+			}
+		}, true);
+
+		pauseButton.addEventListener("click", () => {
+			GameOfLife.pause();
+		}, true);
+
+		resetButton.addEventListener("click", () => {
+			genSelect.innerHTML = '';
+			GameOfLife.reset();
+			stared = false;
+			playButton.innerHTML = "Start";
+		}, true);
+
+		GameOfLife.addEvent("onRender", (cg) => {
+			//console.log(currentGen);
+			currentGen.innerHTML = cg;
+			
+			let option = document.createElement("option");
+			option.value = cg;
+			option.innerHTML = cg;
+
+			genSelect.appendChild(option);
+		});
+
+		GameOfLife.addEvent("onNewGen", (newGen) => {
+			//console.log(newGen);
+		});
+
+		genSelect.addEventListener("change", (event) => {
+			const genToDisplay = genSelect.value;
+			const gen = GameOfLife.getGenFromHistory(genToDisplay);
+			GameOfLife.displayGen(gen);
+		}, true)
+	</script>
 </body>
 </html>

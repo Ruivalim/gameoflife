@@ -1,38 +1,112 @@
 class ConwaysGameOfLife {
-    constructor(canvas, speed = 0.1, width = 800, height = 800, resolution = 10){
-        this.canvas = canvas;
-        this.width = width;
-        this.height = height;
-        this.resolution = resolution;
-        this.speed = speed * 1000;
+    constructor(canvas, speed = 0.1, width = 800, height = 800, resolution = 10, saveHistory = false){
+        if( typeof canvas == "object" ){
+            this.canvas = canvas.canvas;
+            if( canvas.speed ){
+                this.speed = canvas.speed;
+            }else{
+                this.speed = speed;
+            }
+            if( canvas.width ){
+                this.width = canvas.width;
+            }else{
+                this.width = width;
+            }
+            if( canvas.height ){
+                this.height = canvas.height;
+            }else{
+                this.height = height;
+            }
+            if( canvas.resolution ){
+                this.resolution = canvas.resolution;
+            }else{
+                this.resolution = resolution;
+            }
+            if( canvas.saveHistory ){
+                this.saveHistory = canvas.saveHistory;
+            }else{
+                this.saveHistory = saveHistory;
+            }
+        }else{
+            this.canvas = canvas;
+            this.width = width;
+            this.height = height;
+            this.resolution = resolution;
+            this.speed = speed * 1000;
+            this.saveHistory = saveHistory;
+        }
         this.cols = this.width / this.resolution;
         this.rows = this.height / this.resolution; 
-        this.ctx = canvas.getContext('2d');
+        this.ctx = this.canvas.getContext('2d');
         this.gens = [];
         this.loop;
         this.lastGen;
         this.currentGen = 0;
+        this.initialState;
+        this.paused = false;
+        this.started = false;
+        this.onRender;
+        this.onNewGen;
+        this.onGenUpdate;
+        this.history = [];
 
-        canvas.height = this.height;
-        canvas.width = this.width;
+        this.canvas.height = this.height;
+        this.canvas.width = this.width;
 
 
         this.init();
     }
 
     init(){
-        let oldGen = this.createInitialGen();
+        const oldGen = this.createInitialGen();
+
+        this.initialState = oldGen;
 
         this.render(oldGen);
-        
-        this.loop = window.setInterval(() => {
-            oldGen = this.newGen(oldGen);
-            this.render(oldGen);
-        }, this.speed);
+    }
+
+    start() {        
+        if( !this.started ){
+            this.started = true;
+            let initialState = this.initialState;
+
+            this.loop = window.setInterval(() => {
+                initialState = this.newGen(initialState);
+                this.render(initialState);
+            }, this.speed);
+        }
     }
 
     pause(){
-        clearInterval(this.loop);
+        if( !this.paused ){
+            clearInterval(this.loop);
+            this.paused = true;
+        }
+    }
+
+    continue(){
+        if( this.paused ){
+            this.paused = false;
+            let oldGen = this.lastGen;
+
+            this.loop = window.setInterval(() => {
+                oldGen = this.newGen(oldGen);
+                this.render(oldGen);
+            }, this.speed);
+        }
+    }
+
+    reset(){
+        this.pause();
+
+        this.history = [];
+        this.gens = [];
+        this.currentGen = 0;
+        this.loop = null;
+        this.paused = false;
+        this.started = false;
+
+        this.init();
     }
 
     setSpeed(speed){
@@ -41,6 +115,12 @@ class ConwaysGameOfLife {
 
     getGen(){
         return this.currentGen;
+    }
+
+    getGenFromHistory(gen){
+        if( this.saveHistory ){
+            return this.history[gen];
+        }
     }
 
     gensNumbs(){
@@ -54,13 +134,13 @@ class ConwaysGameOfLife {
         this.currentGen = gen;
     }
 
-    continue(){
-        let oldGen = this.lastGen;
-
-        this.loop = window.setInterval(() => {
-            oldGen = this.newGen(oldGen);
-            this.render(oldGen);
-        }, this.speed);
+    addEvent(eventType, eventAction){
+        if( eventType == "onRender" ){
+            this.onRender = eventAction;
+        }
+        if( eventType == "onNewGen" ){
+            this.onNewGen = eventAction;
+        }
     }
 
     createInitialGen(){
@@ -103,18 +183,22 @@ class ConwaysGameOfLife {
                 }
             }
         }
+
+        if( this.saveHistory ){
+            this.history.push(newGen);
+        }
+
+        if( typeof this.onNewGen == "function" ){
+            this.onNewGen(newGen);
+        }
         
         return newGen;
     }
 
-    render(oldGen) {
-        this.currentGen = this.gens.length;
-        this.lastGen = oldGen.map(arr => [...arr]);
-        this.gen = this.gens.length + 1;
-
-        for (let col = 0; col < oldGen.length; col++) {
-            for (let row = 0; row < oldGen[col].length; row++) {
-                const cell = oldGen[col][row];
+    displayGen(gen){
+        for (let col = 0; col < gen.length; col++) {
+            for (let row = 0; row < gen[col].length; row++) {
+                const cell = gen[col][row];
                 
                 this.ctx.beginPath();
                 this.ctx.rect(col * this.resolution, row * this.resolution, this.resolution, this.resolution);
@@ -122,6 +206,18 @@ class ConwaysGameOfLife {
                 this.ctx.fill();
                 this.ctx.stroke();
             }
+        }
+    }
+
+    render(oldGen) {
+        this.currentGen = this.gens.length;
+        this.lastGen = oldGen.map(arr => [...arr]);
+        this.gen = this.gens.length + 1;
+
+        this.displayGen(oldGen);
+
+        if( typeof this.onRender == "function" ){
+            this.onRender(this.currentGen);
         }
     }
 }
